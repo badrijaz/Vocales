@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">VocalesAndroid</string>
+    <string name="text_stream">Stream</string>
+    <string name="text_is_streaming">On idle mode</string>
 </resources>
