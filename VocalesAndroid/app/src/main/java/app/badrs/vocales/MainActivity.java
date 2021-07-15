@@ -2,6 +2,7 @@ package app.badrs.vocales;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
@@ -9,7 +10,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,12 +28,14 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonStream;
 
     // Configuration
-
-    private final int PORT = 8081;
+    private Thread streamingThread;
+    private final int PORT = 55286;
     private boolean isStreaming = false;
 
-    private Thread streamingThread = null;
+    // Socket
+    ServerSocket serverSocket;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
                 // Stop the thread for socket streaming
                 isStreaming = false;
-                streamingThread = null;
+                try {
+                    stopStreaming();
+                } catch (IOException error) {
+                    error.printStackTrace();
+                }
 
             } else {
                 imageViewStreaming.setVisibility(View.VISIBLE);
@@ -66,12 +78,16 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start actual socket streaming
                 isStreaming = true;
-                startStreaming();
+                try {
+                    startStreaming();
+                } catch (IOException error) {
+                    error.printStackTrace();
+                }
             }
         });
     }
 
-    private void startStreaming() {
+    private void startStreaming() throws IOException {
 
         // This disables the button access for 2 seconds
         buttonStream.setEnabled(false);
@@ -83,5 +99,33 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.runOnUiThread(() -> buttonStream.setEnabled(true));
             }
         }, 2000);
+
+        // Start socket server
+
+        streamingThread = new Thread(() -> {
+            try {
+                serverSocket = new ServerSocket(PORT);
+                runOnUiThread(() -> Toast.makeText(this, "Server started", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, "Running on " + serverSocket.getLocalSocketAddress(), Toast.LENGTH_SHORT).show());
+
+                while (streamingThread == Thread.currentThread()) {
+                    Socket socket = serverSocket.accept();
+                    runOnUiThread(() -> Toast.makeText(
+                            this,
+                            "Socket connected",
+                            Toast.LENGTH_SHORT
+                    ).show());
+                }
+            } catch (IOException error) {
+                error.printStackTrace();
+            }
+        });
+        streamingThread.start();
+    }
+
+    private void stopStreaming() throws IOException {
+        streamingThread = null;
+        serverSocket.close();
+        Toast.makeText(this, "Closed socket", Toast.LENGTH_SHORT).show();
     }
 }
