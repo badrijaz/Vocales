@@ -27,4 +27,14 @@
         app:layout_constraintEnd_toEndOf="@+id/buttonStream"
         app:layout_constraintStart_toStartOf="@+id/buttonStream"
         app:layout_constraintTop_toBottomOf="@+id/buttonStream" />
+
+    <ImageView
+        android:id="@+id/imageViewStreaming"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewIsStreaming"
+        app:layout_constraintEnd_toStartOf="@+id/textViewIsStreaming"
+        app:layout_constraintTop_toTopOf="@+id/textViewIsStreaming"
+        android:visibility="invisible"
+        app:srcCompat="?android:attr/listChoiceIndicatorSingle" />
 </androidx.constraintlayout.widget.ConstraintLayout>
