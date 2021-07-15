@@ -3,9 +3,12 @@ package app.badrs.vocales;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Typeface;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.format.Formatter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLOutput;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -104,7 +108,11 @@ public class MainActivity extends AppCompatActivity {
 
         streamingThread = new Thread(() -> {
             try {
-                serverSocket = new ServerSocket(PORT);
+                Context mainActivityContext = MainActivity.this;
+                WifiManager wifiManager = (WifiManager) mainActivityContext.getSystemService(WIFI_SERVICE);
+                String localHostAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+
+                serverSocket = new ServerSocket(PORT, 50, InetAddress.getByName(localHostAddress));
                 runOnUiThread(() -> Toast.makeText(this, "Server started", Toast.LENGTH_SHORT).show());
                 runOnUiThread(() -> Toast.makeText(this, "Running on " + serverSocket.getLocalSocketAddress(), Toast.LENGTH_SHORT).show());
 
