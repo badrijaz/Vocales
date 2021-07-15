@@ -36,5 +36,6 @@
         app:layout_constraintEnd_toStartOf="@+id/textViewIsStreaming"
         app:layout_constraintTop_toTopOf="@+id/textViewIsStreaming"
         android:visibility="invisible"
-        app:srcCompat="?android:attr/listChoiceIndicatorSingle" />
+        app:srcCompat="?android:attr/listChoiceIndicatorSingle"
+        app:tint="@color/teal_700"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
