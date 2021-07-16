@@ -30,21 +30,21 @@ import java.net.SocketException;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Views
+    /* Views */
     private ImageView imageViewStreaming;
     private TextView textViewIsStreaming;
     private Button buttonStream;
 
-    // Configuration
+    /* Configuration */
     private Thread streamingThread;
     private final int PORT = 55286;
     private boolean isStreaming = false;
 
-    // UDP Socket
+    /* UDP Socket */
     private final byte[] buffer = new byte[256];
     private DatagramSocket udpServerSocket;
 
-    // Audio
+    /* Audio */
     AudioRecord audioRecorder;
 
     @SuppressLint("SetTextI18n")
@@ -53,13 +53,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Get imageViewStreaming
+        /* Get imageViewStreaming */
         imageViewStreaming = findViewById(R.id.imageViewStreaming);
 
-        // Get textViewIsStreaming
+        /* Get textViewIsStreaming */
         textViewIsStreaming = findViewById(R.id.textViewIsStreaming);
 
-        // Get buttonStream and set onClickListener
+        /* Get buttonStream and set onClickListener */
         buttonStream = findViewById(R.id.buttonStream);
         buttonStream.setOnClickListener(view -> {
             if (isStreaming) {
@@ -93,34 +93,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void startStreaming() {
 
-        // This disables the button access for 2 seconds
+        /* This disables the button access for 2 seconds */
         Utility.temporarilyDisableButtonAccess(this, buttonStream, 2000);
 
-        // Start UDP socket server
+        /* Start UDP socket server */
         streamingThread = new Thread(() -> {
             try {
-                // We pass null in the UDP Socket constructor so that we can bind
-                // IPv4 on the socket later
+                /* We pass null in the UDP Socket constructor so that we can bind
+                 IPv4 on the socket later */
                 udpServerSocket = new DatagramSocket(null);
 
-                // Get the IPv4 of the device
+                /* Get the IPv4 of the device */
                 InetSocketAddress address = Utility.getLocalAddress(MainActivity.this, PORT);
 
-                // Bind that ip address
                 udpServerSocket.bind(address);
 
                 runOnUiThread(() ->
                     Utility.toast(this, udpServerSocket.getLocalSocketAddress().toString())
                 );
 
-                // https://stackoverflow.com/a/51718306/15323175
                 int bufferSize = AudioRecord.getMinBufferSize(
                         44100,
                         AudioFormat.CHANNEL_IN_MONO,
                         AudioFormat.ENCODING_PCM_16BIT
                 );
 
-                // Initialize AudioRecord for getting audio from device
+                /* Initialize AudioRecord for getting audio from device */
                 audioRecorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                                                             44100,
                                                             AudioFormat.CHANNEL_IN_MONO,
@@ -128,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
                                                             bufferSize);
                 byte[] temporaryBuffer = new byte[bufferSize];
 
+                /* Enable noise suppression and echo cancellation  */
                 final int API = Build.VERSION.SDK_INT;
                 if (API > 16) {
                     if (NoiseSuppressor.isAvailable()) {
@@ -142,26 +141,24 @@ public class MainActivity extends AppCompatActivity {
 
                 audioRecorder.startRecording();
 
-                // Worker thread loop
+                /* Send audio data while the thread is stopped -> stopStreaming() is called */
                 while (streamingThread == Thread.currentThread()) {
-                    // Read audioRecorder data and wrap it in a packet for UDP socket to send
+                    /* Read audioRecorder data and wrap it in a packet for UDP socket to send */
                     int bufferRead = audioRecorder.read(temporaryBuffer, 0, bufferSize);
 
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    // this make sure the connection is established
-                    try { 
+                    /* this make sure the connection is established */
+                    try {
                         udpServerSocket.receive(packet);
-                    } catch (SocketException ignored) {};
-
-
+                    } catch (SocketException ignored) {}
 
                     packet = new DatagramPacket(temporaryBuffer, bufferRead,
                                                 packet.getAddress(), packet.getPort());
                     try {
                         udpServerSocket.send(packet);
 
-                        DatagramPacket finalPacket = packet; // packet needs to be final to run on
-                                                             // uiThread
+                        /* packet needs to be final to run on uiThread */
+                        DatagramPacket finalPacket = packet;
                         runOnUiThread(() -> textViewIsStreaming.setText(new String(
                                 finalPacket.getData(), 0, finalPacket.getLength()
                         )));
@@ -176,9 +173,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopStreaming() {
         streamingThread = null;
-        audioRecorder.stop(); // stopping audio after setting thread to null will avoid crashing app
-
+         /* Stopping audio after setting thread to null  will avoid crashing app */
+        audioRecorder.stop();
         udpServerSocket.close();
+
         Utility.toast(this, "Closed socket");
         Utility.temporarilyDisableButtonAccess(this, buttonStream, 2000);
     }
