@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioFormat;
@@ -15,11 +14,9 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.NoiseSuppressor;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.format.Formatter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -106,13 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 udpServerSocket = new DatagramSocket(null);
 
                 // Get the IPv4 of the device
-                Context mainActivityContext = MainActivity.this;
-                WifiManager wifiManager
-                        = (WifiManager) mainActivityContext.getSystemService(WIFI_SERVICE);
-                String localHostAddress
-                        = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
-                InetSocketAddress address
-                        = new InetSocketAddress(localHostAddress, PORT);
+                InetSocketAddress address = Utility.getLocalAddress(MainActivity.this, PORT);
 
                 // Bind that ip address
                 udpServerSocket.bind(address);
