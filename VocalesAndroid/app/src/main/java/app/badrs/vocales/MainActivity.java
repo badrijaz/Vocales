@@ -9,12 +9,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.NoiseSuppressor;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -26,7 +20,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,11 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isStreaming = false;
 
     /* UDP Socket */
-    private final byte[] buffer = new byte[256];
     private DatagramSocket udpServerSocket;
-
-    /* Audio */
-    AudioRecord audioRecorder;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -112,57 +101,21 @@ public class MainActivity extends AppCompatActivity {
                     Utility.toast(this, udpServerSocket.getLocalSocketAddress().toString())
                 );
 
-                int bufferSize = AudioRecord.getMinBufferSize(
-                        44100,
-                        AudioFormat.CHANNEL_IN_MONO,
-                        AudioFormat.ENCODING_PCM_16BIT
-                );
-
-                /* Initialize AudioRecord for getting audio from device */
-                audioRecorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                                                            44100,
-                                                            AudioFormat.CHANNEL_IN_MONO,
-                                                            AudioFormat.ENCODING_PCM_16BIT,
-                                                            bufferSize);
-                byte[] temporaryBuffer = new byte[bufferSize];
-
-                /* Enable noise suppression and echo cancellation  */
-                final int API = Build.VERSION.SDK_INT;
-                if (API > 16) {
-                    if (NoiseSuppressor.isAvailable()) {
-                        NoiseSuppressor.create(audioRecorder.getAudioSessionId()).setEnabled(true);
-                    }
-                    if (AcousticEchoCanceler.isAvailable()) {
-                        AcousticEchoCanceler.create(
-                                audioRecorder.getAudioSessionId()
-                        ).setEnabled(true);
-                    }
-                }
-
-                audioRecorder.startRecording();
-
                 /* Send audio data while the thread is stopped -> stopStreaming() is called */
                 while (streamingThread == Thread.currentThread()) {
+
+                    /* Check if client is connected */
+                    DatagramPacket client = new DatagramPacket(new byte[0], 0);
+                    udpServerSocket.receive(client);
+
                     /* Read audioRecorder data and wrap it in a packet for UDP socket to send */
-                    int bufferRead = audioRecorder.read(temporaryBuffer, 0, bufferSize);
-
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    /* this make sure the connection is established */
-                    try {
-                        udpServerSocket.receive(packet);
-                    } catch (SocketException ignored) {}
-
-                    packet = new DatagramPacket(temporaryBuffer, bufferRead,
-                                                packet.getAddress(), packet.getPort());
-                    try {
-                        udpServerSocket.send(packet);
-
-                        /* packet needs to be final to run on uiThread */
-                        DatagramPacket finalPacket = packet;
-                        runOnUiThread(() -> textViewIsStreaming.setText(new String(
-                                finalPacket.getData(), 0, finalPacket.getLength()
-                        )));
-                    } catch (java.net.SocketException ignored) { }
+                    String messageToClient = "Hi";
+                    DatagramPacket packet = new DatagramPacket(
+                            messageToClient.getBytes(),
+                            messageToClient.length(),
+                            client.getAddress(),
+                            client.getPort());
+                    udpServerSocket.send(packet);
                 }
             } catch (IOException error) {
                 error.printStackTrace();
@@ -174,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
     private void stopStreaming() {
         streamingThread = null;
          /* Stopping audio after setting thread to null  will avoid crashing app */
-        audioRecorder.stop();
         udpServerSocket.close();
 
         Utility.toast(this, "Closed socket");
