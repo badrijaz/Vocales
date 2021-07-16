@@ -24,7 +24,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -129,11 +128,8 @@ public class MainActivity extends AppCompatActivity {
                 udpServerSocket.bind(address);
 
                 runOnUiThread(() ->
-                    Toast.makeText(
-                            this,
-                            udpServerSocket.getLocalSocketAddress().toString(),
-                            Toast.LENGTH_SHORT
-                    ).show());
+                    Utility.toast(this, udpServerSocket.getLocalSocketAddress().toString())
+                );
 
                 // https://stackoverflow.com/a/51718306/15323175
                 int bufferSize = AudioRecord.getMinBufferSize(
@@ -196,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         audioRecorder.stop(); // stopping audio after setting thread to null will avoid crashing app
 
         udpServerSocket.close();
-        Toast.makeText(this, "Closed socket", Toast.LENGTH_SHORT).show();
+        Utility.toast(this, "Closed socket");
     }
 
     private void verifyRecordAudioPermissions() {
@@ -217,11 +213,7 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startStreaming();
             } else {
-                Toast.makeText(
-                        this,
-                        "No permission to record audio",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Utility.toast(this, "No permission to record audio");
             }
         }
     }
