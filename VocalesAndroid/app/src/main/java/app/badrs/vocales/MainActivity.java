@@ -124,7 +124,11 @@ public class MainActivity extends AppCompatActivity {
 
                 while (streamingThread == Thread.currentThread()) {
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    udpServerSocket.receive(packet);
+                    try {
+                        udpServerSocket.receive(packet);
+                    } catch (java.net.SocketException error) {
+                        continue;
+                    }
 
                     packet = new DatagramPacket(
                             buffer,
