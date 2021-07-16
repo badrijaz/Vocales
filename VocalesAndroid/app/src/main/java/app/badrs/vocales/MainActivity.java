@@ -18,8 +18,6 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.sql.SQLOutput;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -82,16 +80,12 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start actual socket streaming
                 isStreaming = true;
-                try {
-                    startStreaming();
-                } catch (IOException error) {
-                    error.printStackTrace();
-                }
+                startStreaming();
             }
         });
     }
 
-    private void startStreaming() throws IOException {
+    private void startStreaming() {
 
         // This disables the button access for 2 seconds
         buttonStream.setEnabled(false);
@@ -112,12 +106,12 @@ public class MainActivity extends AppCompatActivity {
                 WifiManager wifiManager = (WifiManager) mainActivityContext.getSystemService(WIFI_SERVICE);
                 String localHostAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
 
-                serverSocket = new ServerSocket(PORT, 50, InetAddress.getByName(localHostAddress));
+                serverSocket = new ServerSocket(PORT, 0, InetAddress.getByName(localHostAddress));
                 runOnUiThread(() -> Toast.makeText(this, "Server started", Toast.LENGTH_SHORT).show());
                 runOnUiThread(() -> Toast.makeText(this, "Running on " + serverSocket.getLocalSocketAddress(), Toast.LENGTH_SHORT).show());
 
                 while (streamingThread == Thread.currentThread()) {
-                    Socket socket = serverSocket.accept();
+                    serverSocket.accept();
                     runOnUiThread(() -> Toast.makeText(
                             this,
                             "Socket connected",
