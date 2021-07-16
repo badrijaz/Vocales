@@ -183,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
         udpServerSocket.close();
         Utility.toast(this, "Closed socket");
+        Utility.temporarilyDisableButtonAccess(this, buttonStream, 2000);
     }
 
     private void verifyRecordAudioPermissionsThenStream() {
