@@ -16,11 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,9 +33,10 @@ public class MainActivity extends AppCompatActivity {
     private Thread streamingThread;
     private final int PORT = 55286;
     private boolean isStreaming = false;
+    private final byte[] buffer = new byte[256];
 
-    // Socket
-    ServerSocket serverSocket;
+    // UDP Socket
+    private DatagramSocket udpServerSocket;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -62,11 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Stop the thread for socket streaming
                 isStreaming = false;
-                try {
-                    stopStreaming();
-                } catch (IOException error) {
-                    error.printStackTrace();
-                }
+                stopStreaming();
 
             } else {
                 imageViewStreaming.setVisibility(View.VISIBLE);
@@ -98,25 +95,52 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 2000);
 
-        // Start socket server
+        // Start UDP socket server
 
         streamingThread = new Thread(() -> {
             try {
-                Context mainActivityContext = MainActivity.this;
-                WifiManager wifiManager = (WifiManager) mainActivityContext.getSystemService(WIFI_SERVICE);
-                String localHostAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+                // We pass null in the UDP Socket constructor so that we can bind
+                // IPv4 on the socket later
+                udpServerSocket =  new DatagramSocket(null);
 
-                serverSocket = new ServerSocket(PORT, 0, InetAddress.getByName(localHostAddress));
-                runOnUiThread(() -> Toast.makeText(this, "Server started", Toast.LENGTH_SHORT).show());
-                runOnUiThread(() -> Toast.makeText(this, "Running on " + serverSocket.getLocalSocketAddress(), Toast.LENGTH_SHORT).show());
+                // Get the IPv4 of the device
+                Context mainActivityContext = MainActivity.this;
+                WifiManager wifiManager
+                        = (WifiManager) mainActivityContext.getSystemService(WIFI_SERVICE);
+                String localHostAddress
+                        = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+                InetSocketAddress address
+                        = new InetSocketAddress(localHostAddress, PORT);
+
+                // Bind that ip address
+                udpServerSocket.bind(address);
+
+                runOnUiThread(() ->
+                    Toast.makeText(
+                        this,
+                        udpServerSocket.getLocalSocketAddress().toString(),
+                        Toast.LENGTH_SHORT
+                ).show());
 
                 while (streamingThread == Thread.currentThread()) {
-                    serverSocket.accept();
-                    runOnUiThread(() -> Toast.makeText(
-                            this,
-                            "Socket connected",
-                            Toast.LENGTH_SHORT
-                    ).show());
+                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                    udpServerSocket.receive(packet);
+
+                    packet = new DatagramPacket(
+                            buffer,
+                            buffer.length,
+                            packet.getAddress(),
+                            packet.getPort()
+                    );
+
+                    DatagramPacket finalPacket = packet; // runOnUIThread requires packet to be
+                    runOnUiThread(() -> {                // final
+                        Toast.makeText(
+                                this,
+                                new String(finalPacket.getData(), 0, finalPacket.getLength()),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
                 }
             } catch (IOException error) {
                 error.printStackTrace();
@@ -125,9 +149,9 @@ public class MainActivity extends AppCompatActivity {
         streamingThread.start();
     }
 
-    private void stopStreaming() throws IOException {
+    private void stopStreaming() {
         streamingThread = null;
-        serverSocket.close();
+        udpServerSocket.close();
         Toast.makeText(this, "Closed socket", Toast.LENGTH_SHORT).show();
     }
 }
