@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -98,15 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private void startStreaming() {
 
         // This disables the button access for 2 seconds
-        buttonStream.setEnabled(false);
-
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                MainActivity.this.runOnUiThread(() -> buttonStream.setEnabled(true));
-            }
-        }, 2000);
+        Utility.temporarilyDisableButtonAccess(this, buttonStream, 2000);
 
         // Start UDP socket server
         streamingThread = new Thread(() -> {
