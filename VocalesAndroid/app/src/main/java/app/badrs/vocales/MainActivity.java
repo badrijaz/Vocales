@@ -12,9 +12,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.audiofx.AcousticEchoCanceler;
+import android.media.audiofx.NoiseSuppressor;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.format.Formatter;
@@ -27,6 +29,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,10 +45,13 @@ public class MainActivity extends AppCompatActivity {
     private Thread streamingThread;
     private final int PORT = 55286;
     private boolean isStreaming = false;
-    private final byte[] buffer = new byte[256];
 
     // UDP Socket
+    private final byte[] buffer = new byte[256];
     private DatagramSocket udpServerSocket;
+
+    // Audio
+    AudioRecord audioRecorder;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -105,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
         }, 2000);
 
         // Start UDP socket server
-
         streamingThread = new Thread(() -> {
             try {
                 // We pass null in the UDP Socket constructor so that we can bind
@@ -131,29 +136,54 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT
                     ).show());
 
-                while (streamingThread == Thread.currentThread()) {
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    try {
-                        udpServerSocket.receive(packet);
-                    } catch (java.net.SocketException error) {
-                        continue;
+                // https://stackoverflow.com/a/51718306/15323175
+                int bufferSize = AudioRecord.getMinBufferSize(
+                        44100,
+                        AudioFormat.CHANNEL_IN_MONO,
+                        AudioFormat.ENCODING_PCM_16BIT
+                );
+
+                // Initialize AudioRecord for getting audio from device
+                audioRecorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                                                            44100,
+                                                            AudioFormat.CHANNEL_IN_MONO,
+                                                            AudioFormat.ENCODING_PCM_16BIT,
+                                                            bufferSize);
+                byte[] temporaryBuffer = new byte[bufferSize];
+
+                final int API = Build.VERSION.SDK_INT;
+                if (API > 16) {
+                    if (NoiseSuppressor.isAvailable()) {
+                        NoiseSuppressor.create(audioRecorder.getAudioSessionId()).setEnabled(true);
                     }
+                    if (AcousticEchoCanceler.isAvailable()) {
+                        AcousticEchoCanceler.create(
+                                audioRecorder.getAudioSessionId()
+                        ).setEnabled(true);
+                    }
+                }
 
-                    packet = new DatagramPacket(
-                            buffer,
-                            buffer.length,
-                            packet.getAddress(),
-                            packet.getPort()
-                    );
+                audioRecorder.startRecording();
 
-                    DatagramPacket finalPacket = packet; // runOnUIThread requires packet to be
-                    runOnUiThread(() -> {                // final
-                        Toast.makeText(
-                                this,
-                                new String(finalPacket.getData(), 0, finalPacket.getLength()),
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    });
+                // Worker thread loop
+                while (streamingThread == Thread.currentThread()) {
+                    // Read audioRecorder data and wrap it in a packet for UDP socket to send
+                    int bufferRead = audioRecorder.read(temporaryBuffer, 0, bufferSize);
+
+                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                    udpServerSocket.receive(packet); // this make sure the connection is established
+
+                    packet = new DatagramPacket(temporaryBuffer, bufferRead,
+                                                packet.getAddress(), packet.getPort());
+                    try {
+                        udpServerSocket.send(packet);
+
+                        DatagramPacket finalPacket = packet; // packet needs to be final to run on
+                                                             // uiThread
+                        runOnUiThread(() -> textViewIsStreaming.setText(new String(
+                                finalPacket.getData(), 0, finalPacket.getLength()
+                        )));
+                    } catch (java.net.SocketException ignored) { }
                 }
             } catch (IOException error) {
                 error.printStackTrace();
@@ -164,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopStreaming() {
         streamingThread = null;
+        audioRecorder.stop(); // stopping audio after setting thread to null will avoid crashing app
 
         udpServerSocket.close();
         Toast.makeText(this, "Closed socket", Toast.LENGTH_SHORT).show();
