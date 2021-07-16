@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start actual socket streaming
                 isStreaming = true;
-                verifyRecordAudioPermissions();
+                verifyRecordAudioPermissionsThenStream();
             }
         });
     }
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         Utility.toast(this, "Closed socket");
     }
 
-    private void verifyRecordAudioPermissions() {
+    private void verifyRecordAudioPermissionsThenStream() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
