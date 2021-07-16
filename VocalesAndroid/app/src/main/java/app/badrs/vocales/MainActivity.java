@@ -1,10 +1,19 @@
 package app.badrs.vocales;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.Html;
@@ -77,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start actual socket streaming
                 isStreaming = true;
-                startStreaming();
+                verifyRecordAudioPermissions();
             }
         });
     }
@@ -101,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // We pass null in the UDP Socket constructor so that we can bind
                 // IPv4 on the socket later
-                udpServerSocket =  new DatagramSocket(null);
+                udpServerSocket = new DatagramSocket(null);
 
                 // Get the IPv4 of the device
                 Context mainActivityContext = MainActivity.this;
@@ -117,10 +126,10 @@ public class MainActivity extends AppCompatActivity {
 
                 runOnUiThread(() ->
                     Toast.makeText(
-                        this,
-                        udpServerSocket.getLocalSocketAddress().toString(),
-                        Toast.LENGTH_SHORT
-                ).show());
+                            this,
+                            udpServerSocket.getLocalSocketAddress().toString(),
+                            Toast.LENGTH_SHORT
+                    ).show());
 
                 while (streamingThread == Thread.currentThread()) {
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -155,7 +164,37 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopStreaming() {
         streamingThread = null;
+
         udpServerSocket.close();
         Toast.makeText(this, "Closed socket", Toast.LENGTH_SHORT).show();
+    }
+
+    private void verifyRecordAudioPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.RECORD_AUDIO
+            }, 1);
+        } else {
+            startStreaming();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startStreaming();
+                } else {
+                    Toast.makeText(
+                            this,
+                            "No permission to record audio",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            }
+        }
     }
 }
