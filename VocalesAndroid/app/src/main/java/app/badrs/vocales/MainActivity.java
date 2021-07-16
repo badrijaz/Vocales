@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -147,7 +148,12 @@ public class MainActivity extends AppCompatActivity {
                     int bufferRead = audioRecorder.read(temporaryBuffer, 0, bufferSize);
 
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    udpServerSocket.receive(packet); // this make sure the connection is established
+                    // this make sure the connection is established
+                    try { 
+                        udpServerSocket.receive(packet);
+                    } catch (SocketException ignored) {};
+
+
 
                     packet = new DatagramPacket(temporaryBuffer, bufferRead,
                                                 packet.getAddress(), packet.getPort());
