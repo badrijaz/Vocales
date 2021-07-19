@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         streamingThread = null;
          /* Stopping audio after setting thread to null  will avoid crashing app */
         udpServerSocket.close();
+        audioRecorder.stop();
 
         Utility.toast(this, "Closed socket");
         Utility.temporarilyDisableButtonAccess(this, buttonStream, 2000);
