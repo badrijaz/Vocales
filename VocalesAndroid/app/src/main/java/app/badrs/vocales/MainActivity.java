@@ -9,6 +9,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -35,6 +38,15 @@ public class MainActivity extends AppCompatActivity {
 
     /* UDP Socket */
     private DatagramSocket udpServerSocket;
+
+    /* AudioRecorder + Audio Configuration */
+    private AudioRecord audioRecorder;
+    private final int RECORDER_SOURCE = MediaRecorder.AudioSource.MIC;
+    private final int SAMPLE_RATE = 44100;
+    private final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
+    private final int FORMAT = AudioFormat.ENCODING_PCM_16BIT;
+    private final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL, FORMAT);
+    private final byte[] buffer = new byte[BUFFER_SIZE];
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -101,18 +113,22 @@ public class MainActivity extends AppCompatActivity {
                     Utility.toast(this, udpServerSocket.getLocalSocketAddress().toString())
                 );
 
+                /* Initialize audioRecorder and start recording */
+                audioRecorder = new AudioRecord(RECORDER_SOURCE, SAMPLE_RATE, CHANNEL, FORMAT,
+                                                BUFFER_SIZE * 10);
+                audioRecorder.startRecording();
+
                 /* Send audio data while the thread is stopped -> stopStreaming() is called */
                 while (streamingThread == Thread.currentThread()) {
-
                     /* Check if client is connected */
                     DatagramPacket client = new DatagramPacket(new byte[0], 0);
                     udpServerSocket.receive(client);
 
                     /* Read audioRecorder data and wrap it in a packet for UDP socket to send */
-                    String messageToClient = "Hi";
+                    int recorderRead = audioRecorder.read(buffer, 0, buffer.length);
                     DatagramPacket packet = new DatagramPacket(
-                            messageToClient.getBytes(),
-                            messageToClient.length(),
+                            buffer,
+                            recorderRead,
                             client.getAddress(),
                             client.getPort());
                     udpServerSocket.send(packet);
