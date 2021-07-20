@@ -22,7 +22,7 @@ public class UserInterface extends JFrame {
 
         /* addressTextArea */
         addressTextArea.setRows(1);
-        addressTextArea.setText("192.168.10.");
+        addressTextArea.setText("192.168.10.5");
         /* Adding components to the layout */
         getContentPane().add(addressTextArea);
         getContentPane().add(connectionIndicator);
