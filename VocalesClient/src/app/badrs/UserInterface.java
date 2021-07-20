@@ -27,10 +27,12 @@ public class UserInterface extends JFrame {
 
         /* Start / restart connection on button click */
         connectButton.addActionListener(actionEvent -> {
-            if (Main.serverThread.isAlive()) {
+            if (Main.isThreadRunning) {
+                Main.isThreadRunning = false;
                 Main.disconnectFromServer();
                 connectionIndicator.setText("Idle");
             } else {
+                Main.isThreadRunning = true;
                 Main.connectToServer();
                 connectionIndicator.setText("Connected");
             }

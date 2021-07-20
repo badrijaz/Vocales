@@ -16,6 +16,7 @@ public class Main {
     private static DatagramPacket receivedPacket;
 
     public static Thread serverThread;
+    public static boolean isThreadRunning = false;
 
     public static void main(String[] args) throws Exception {
 
