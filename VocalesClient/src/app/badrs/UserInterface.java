@@ -28,14 +28,12 @@ public class UserInterface extends JFrame {
         /* Start / restart connection on button clcik */
         connectButton.addActionListener(actionEvent -> {
             if (serverThread.isAlive()) {
-                serverThread.stop();
+                Main.disconnectFromServer();
+                connectionIndicator.setText("Idle");
             } else {
                 Main.connectToServer();
+                connectionIndicator.setText("Connected");
             }
-
-            connectionIndicator.setText(
-                    serverThread.isAlive() ? "Connected.." : "Idle"
-            );
         });
     }
 

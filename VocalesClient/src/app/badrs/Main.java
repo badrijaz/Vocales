@@ -25,12 +25,7 @@ public class Main {
         serverSocket = new DatagramSocket(null);
         serverSocket.connect(address);
 
-        /* GUI */
-        new UserInterface(serverThread);
-    }
-
-    public static void connectToServer() {
-        Util.log("Starting server...");
+        /* Thread */
         serverThread = new Thread(() -> {
             while (serverThread == Thread.currentThread()) {
                 // Ensure the client (this) is alive
@@ -52,6 +47,17 @@ public class Main {
             }
         });
 
+        /* GUI */
+        new UserInterface(serverThread);
+    }
+
+    public static void connectToServer() {
+        Util.log("Starting server...");
         serverThread.start();
+    }
+
+    public static void disconnectFromServer() {
+        Util.log("Disconnecting...");
+        serverThread.stop();
     }
 }
