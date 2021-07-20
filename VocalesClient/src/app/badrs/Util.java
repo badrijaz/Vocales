@@ -2,6 +2,7 @@ package app.badrs;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
+import java.util.Scanner;
 
 public class Util {
 
@@ -21,5 +22,12 @@ public class Util {
 
     public static void log(String stringToLog) {
         System.out.println(stringToLog);
+    }
+
+    public static String getInput(String prompt) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println(prompt);
+
+        return scanner.nextLine();
     }
 }
