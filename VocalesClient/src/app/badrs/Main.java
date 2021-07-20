@@ -15,7 +15,7 @@ public class Main {
     private static DatagramSocket serverSocket;
     private static DatagramPacket receivedPacket;
 
-    private static Thread serverThread;
+    public static Thread serverThread;
 
     public static void main(String[] args) throws Exception {
 
@@ -48,7 +48,7 @@ public class Main {
         });
 
         /* GUI */
-        new UserInterface(serverThread);
+        new UserInterface();
     }
 
     public static void connectToServer() {

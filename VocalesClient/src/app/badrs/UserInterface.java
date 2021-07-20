@@ -10,7 +10,7 @@ public class UserInterface extends JFrame {
     private JButton connectButton = new JButton("Connect");
     private JLabel connectionIndicator = new JLabel("Idle");
 
-    public UserInterface(Thread serverThread) {
+    public UserInterface() {
         super("Vocales");
 
         GridLayout gridLayout = new GridLayout(0, 2);
@@ -27,7 +27,7 @@ public class UserInterface extends JFrame {
 
         /* Start / restart connection on button clcik */
         connectButton.addActionListener(actionEvent -> {
-            if (serverThread.isAlive()) {
+            if (Main.serverThread.isAlive()) {
                 Main.disconnectFromServer();
                 connectionIndicator.setText("Idle");
             } else {
