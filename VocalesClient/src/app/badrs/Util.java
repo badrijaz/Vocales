@@ -18,4 +18,8 @@ public class Util {
         // Return the default playback device if not found
         return AudioSystem.getMixerInfo()[0];
     }
+
+    public static void log(String stringToLog) {
+        System.out.println(stringToLog);
+    }
 }
