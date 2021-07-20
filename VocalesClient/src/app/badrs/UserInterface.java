@@ -25,7 +25,7 @@ public class UserInterface extends JFrame {
         getContentPane().add(connectionIndicator);
         getContentPane().add(connectButton);
 
-        /* Start / restart connection on button clcik */
+        /* Start / restart connection on button click */
         connectButton.addActionListener(actionEvent -> {
             if (Main.serverThread.isAlive()) {
                 Main.disconnectFromServer();
