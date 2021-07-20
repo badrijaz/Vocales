@@ -34,6 +34,8 @@ public class Main {
                     serverSocket.receive(receivedPacket);
 
                     Util.log("Received packet " + receivedPacket.getLength());
+                    // Play audio to mixer
+                    Util.playAudioFromBytes(receivedPacket.getData());
 
                 } catch (IOException error) {
                     error.printStackTrace();
@@ -41,9 +43,5 @@ public class Main {
             }
         });
         serverThread.start();
-
-        if (Util.getInput("Close server?: ").equals("y"))
-            serverThread = null;
-
     }
 }
