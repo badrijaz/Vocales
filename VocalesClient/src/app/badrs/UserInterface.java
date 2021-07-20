@@ -20,6 +20,16 @@ public class UserInterface extends JFrame {
 
         getContentPane().setLayout(gridLayout);
         getContentPane().add(connectButton);
+
+        /* Start / restart connection on button clcik */
+        connectButton.addActionListener(actionEvent -> {
+            if (serverThread.isAlive()) {
+                serverThread.stop();
+            } else {
+                Main.startConnection();
+            }
+        });
+
     }
 
 }

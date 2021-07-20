@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 public class Main {
 
     /* Socket and Packet */
-    private static String IP_ADDRESS = "192.168.10.5";
+    private static String IP_ADDRESS = "192.168.10.4";
     private static final int PORT = 55286;
     private static InetSocketAddress address = new InetSocketAddress(IP_ADDRESS, PORT);
     private static final int BUFFER_SIZE = 10000;
@@ -18,10 +18,20 @@ public class Main {
     private static Thread serverThread;
 
     public static void main(String[] args) throws Exception {
+
+
+
 	    /* Initialize and connect to Android */
         serverSocket = new DatagramSocket(null);
         serverSocket.connect(address);
 
+        startConnection();
+        /* GUI */
+        new UserInterface(serverThread);
+    }
+
+    public static void startConnection() {
+        Util.log("Starting server...");
         serverThread = new Thread(() -> {
             while (serverThread == Thread.currentThread()) {
                 // Ensure the client (this) is alive
@@ -42,6 +52,7 @@ public class Main {
                 }
             }
         });
+
         serverThread.start();
     }
 }
