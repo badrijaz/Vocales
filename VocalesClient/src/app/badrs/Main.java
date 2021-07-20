@@ -1,5 +1,6 @@
 package app.badrs;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -14,21 +15,35 @@ public class Main {
     private static DatagramSocket serverSocket;
     private static DatagramPacket receivedPacket;
 
+    private static Thread serverThread;
+
     public static void main(String[] args) throws Exception {
 	    /* Initialize and connect to Android */
         serverSocket = new DatagramSocket(null);
         serverSocket.connect(address);
 
-        while (true) {
-            // Ensure the client (this) is alive
-            serverSocket.send(new DatagramPacket(new byte[0], 0));
+        serverThread = new Thread(() -> {
+            while (serverThread == Thread.currentThread()) {
+                // Ensure the client (this) is alive
+                try {
+                    serverSocket.send(new DatagramPacket(new byte[0], 0));
 
-            // Receive packet from the Android server
-            byte[] receivedData = new byte[BUFFER_SIZE];
-            receivedPacket = new DatagramPacket(receivedData, receivedData.length);
-            serverSocket.receive(receivedPacket);
+                    // Receive packet from the Android server
+                    byte[] receivedData = new byte[BUFFER_SIZE];
+                    receivedPacket = new DatagramPacket(receivedData, receivedData.length);
+                    serverSocket.receive(receivedPacket);
 
-            Util.log("Received packet " + receivedPacket.getLength());
-        }
+                    Util.log("Received packet " + receivedPacket.getLength());
+
+                } catch (IOException error) {
+                    error.printStackTrace();
+                }
+            }
+        });
+        serverThread.start();
+
+        if (Util.getInput("Close server?: ").equals("y"))
+            serverThread = null;
+
     }
 }
