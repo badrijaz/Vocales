@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 public class UserInterface extends JFrame {
 
     private JButton connectButton = new JButton("Connect");
+    private JLabel connectionIndicator = new JLabel("Idle");
 
     public UserInterface(Thread serverThread) {
         super("Vocales");
@@ -19,6 +20,9 @@ public class UserInterface extends JFrame {
         setVisible(true);
 
         getContentPane().setLayout(gridLayout);
+
+        /* Adding components to the layout */
+        getContentPane().add(connectionIndicator);
         getContentPane().add(connectButton);
 
         /* Start / restart connection on button clcik */
@@ -26,10 +30,13 @@ public class UserInterface extends JFrame {
             if (serverThread.isAlive()) {
                 serverThread.stop();
             } else {
-                Main.startConnection();
+                Main.connectToServer();
             }
-        });
 
+            connectionIndicator.setText(
+                    serverThread.isAlive() ? "Connected.." : "Idle"
+            );
+        });
     }
 
 }
