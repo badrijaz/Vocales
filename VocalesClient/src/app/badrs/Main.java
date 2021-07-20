@@ -1,10 +1,7 @@
 package app.badrs;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.*;
 
 public class Main {
 
@@ -23,16 +20,21 @@ public class Main {
         new UserInterface();
     }
 
-    public static void setupConnection() throws SocketException {
+    public static void setupConnection() {
         InetSocketAddress address = new InetSocketAddress(UserInterface.addressTextArea.getText(), PORT);
-        serverSocket = new DatagramSocket(null);
-        serverSocket.connect(address);
+        try {
+            serverSocket = new DatagramSocket(null);
+        } catch (SocketException ignored) {} // Ignoring this because initially we're binding to a null port
+
+        try {
+            serverSocket.connect(address);
+        } catch (SocketException | IllegalArgumentException socketException) {
+            Util.log("Cannot connect");
+        }
     }
 
     public static void connectToServer() {
-        try {
-            setupConnection();
-        } catch (SocketException ignored) {}
+        setupConnection();
 
         serverThread = new Thread(() -> {
             while (serverThread == Thread.currentThread() && !serverThread.isInterrupted()) {
