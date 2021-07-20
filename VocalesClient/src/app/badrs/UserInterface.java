@@ -33,14 +33,13 @@ public class UserInterface extends JFrame {
             if (Main.isThreadRunning) {
                 Main.isThreadRunning = false;
                 Main.disconnectFromServer();
-                connectButton.setText("Connect");
-                connectionIndicator.setText("Idle");
             } else {
                 Main.isThreadRunning = true;
                 Main.connectToServer();
-                connectButton.setText("Disconnect");
-                connectionIndicator.setText("Connected");
             }
+
+            connectionIndicator.setText(Main.isThreadRunning ? "Connected" : "Idle");
+            connectButton.setText(Main.isThreadRunning ? "Disconnect" : "Connect");
         });
     }
 
