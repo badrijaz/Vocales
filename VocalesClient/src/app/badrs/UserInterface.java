@@ -49,8 +49,10 @@ public class UserInterface extends JFrame {
                 Main.connectToServer();
             }
 
-            connectionIndicator.setText(Main.isThreadRunning ? "Connected" : "Idle");
-            connectButton.setText(Main.isThreadRunning ? "Disconnect" : "Connect");
+            java.awt.EventQueue.invokeLater(() -> {
+                connectionIndicator.setText(Main.isThreadRunning ? "Connected" : "Idle");
+                connectButton.setText(Main.isThreadRunning ? "Disconnect" : "Connect");
+            });
         });
 
         setVisible(true);
