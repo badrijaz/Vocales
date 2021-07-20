@@ -2,13 +2,12 @@ package app.badrs;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class UserInterface extends JFrame {
 
-    private JButton connectButton = new JButton("Connect");
+    public static JTextArea addressTextArea = new JTextArea();
     private JLabel connectionIndicator = new JLabel("Idle", SwingConstants.CENTER);
+    private JButton connectButton = new JButton("Connect");
 
     public UserInterface() {
         super("Vocales");
@@ -21,7 +20,11 @@ public class UserInterface extends JFrame {
 
         getContentPane().setLayout(gridLayout);
 
+        /* addressTextArea */
+        addressTextArea.setRows(1);
+        addressTextArea.setText("192.168.10.");
         /* Adding components to the layout */
+        getContentPane().add(addressTextArea);
         getContentPane().add(connectionIndicator);
         getContentPane().add(connectButton);
 
