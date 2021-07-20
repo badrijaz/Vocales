@@ -11,7 +11,7 @@ public class Main {
     private static String IP_ADDRESS = "192.168.10.5";
     private static final int PORT = 55286;
     private static InetSocketAddress address = new InetSocketAddress(IP_ADDRESS, PORT);
-    private static final int BUFFER_SIZE = 3428;
+    private static final int BUFFER_SIZE = 10000;
     private static DatagramSocket serverSocket;
     private static DatagramPacket receivedPacket;
 
