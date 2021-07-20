@@ -25,12 +25,11 @@ public class Main {
         serverSocket = new DatagramSocket(null);
         serverSocket.connect(address);
 
-        startConnection();
         /* GUI */
         new UserInterface(serverThread);
     }
 
-    public static void startConnection() {
+    public static void connectToServer() {
         Util.log("Starting server...");
         serverThread = new Thread(() -> {
             while (serverThread == Thread.currentThread()) {
