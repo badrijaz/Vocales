@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 public class Main {
 
     /* Socket and Packet */
-    private static String IP_ADDRESS = "192.168.10.4";
     private static final int PORT = 55286;
-    private static InetSocketAddress address = new InetSocketAddress(IP_ADDRESS, PORT);
     private static final int BUFFER_SIZE = 10000;
     private static DatagramSocket serverSocket;
     private static DatagramPacket receivedPacket;
@@ -20,17 +19,21 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-
-
-	    /* Initialize and connect to Android */
-        serverSocket = new DatagramSocket(null);
-        serverSocket.connect(address);
-
         /* GUI */
         new UserInterface();
     }
 
+    public static void setupConnection() throws SocketException {
+        InetSocketAddress address = new InetSocketAddress(UserInterface.addressTextArea.getText(), PORT);
+        serverSocket = new DatagramSocket(null);
+        serverSocket.connect(address);
+    }
+
     public static void connectToServer() {
+        try {
+            setupConnection();
+        } catch (SocketException ignored) {}
+
         serverThread = new Thread(() -> {
             while (serverThread == Thread.currentThread() && !serverThread.isInterrupted()) {
                 // Ensure the client (this) is alive
