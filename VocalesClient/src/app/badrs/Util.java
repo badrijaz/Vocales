@@ -51,10 +51,4 @@ public class Util {
         System.out.println(stringToLog);
     }
 
-    public static String getInput(String prompt) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println(prompt);
-
-        return scanner.nextLine();
-    }
 }

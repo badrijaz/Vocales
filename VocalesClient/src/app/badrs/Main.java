@@ -14,7 +14,7 @@ public class Main {
     public static Thread serverThread;
     public static boolean isThreadRunning = false;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         /* GUI */
         new UserInterface();
