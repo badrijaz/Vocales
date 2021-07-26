@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.AudioFormat;
@@ -184,5 +185,11 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-   
+   public void showMicrophoneSettings(MenuItem menuItem) {
+        Intent microphoneSettingsActivityIntent = new Intent(
+                this,
+                MicrophoneSettingsActivity.class
+        );
+        startActivity(microphoneSettingsActivityIntent);
+   }
 }
