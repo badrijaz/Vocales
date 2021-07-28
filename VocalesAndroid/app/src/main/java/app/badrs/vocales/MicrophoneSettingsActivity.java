@@ -10,10 +10,8 @@ import android.widget.CheckBox;
 public class MicrophoneSettingsActivity extends AppCompatActivity {
 
     /* Audio Configurations */
-    private final NoiseSuppressor noiseSuppressor
-            = NoiseSuppressor.create(MainActivity.audioRecorder.getAudioSessionId());
-    private final AcousticEchoCanceler acousticEchoCanceler
-            = AcousticEchoCanceler.create(MainActivity.audioRecorder.getAudioSessionId());
+    private NoiseSuppressor noiseSuppressor;
+    private AcousticEchoCanceler acousticEchoCanceler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,11 +26,28 @@ public class MicrophoneSettingsActivity extends AppCompatActivity {
         CheckBox noiseSuppressionCheckBox = findViewById(R.id.noiseSuppressionCheckBox);
         CheckBox echoCancellationCheckBox = findViewById(R.id.echoCancellationCheckBox);
 
-        noiseSuppressionCheckBox.setOnCheckedChangeListener((buttonView, isChecked) ->
-                noiseSuppressor.setEnabled(isChecked));
+        noiseSuppressionCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (!NoiseSuppressor.isAvailable()) {
+                Utility.toast(
+                        MicrophoneSettingsActivity.this,
+                        "Noise Suppressor not available"
+                );
+                return;
+            }
 
-        echoCancellationCheckBox.setOnCheckedChangeListener((buttonView, isChecked) ->
-                acousticEchoCanceler.setEnabled(isChecked));
+            noiseSuppressor = (NoiseSuppressor) NoiseSuppressor.create(
+                    MainActivity.audioRecorder.getAudioSessionId()
+            );
+            noiseSuppressor.setEnabled(isChecked);
+        });
+
+
+        echoCancellationCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            acousticEchoCanceler = (AcousticEchoCanceler) AcousticEchoCanceler.create(
+                    MainActivity.audioRecorder.getAudioSessionId()
+            );
+            acousticEchoCanceler.setEnabled(isChecked);
+        });
     }
 
 
