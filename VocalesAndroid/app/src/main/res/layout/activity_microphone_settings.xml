@@ -51,7 +51,7 @@
         app:layout_constraintGuide_begin="235dp" />
 
     <CheckBox
-        android:id="@+id/checkBox2"
+        android:id="@+id/noiseSuppressionCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@+id/textView2"
@@ -60,7 +60,7 @@
         app:layout_constraintTop_toTopOf="@+id/textView2" />
 
     <CheckBox
-        android:id="@+id/checkBox"
+        android:id="@+id/echoCancellationCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@+id/textView3"
