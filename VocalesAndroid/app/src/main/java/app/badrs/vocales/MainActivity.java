@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private DatagramSocket udpServerSocket;
 
     /* AudioRecorder + Audio Configuration */
-    private AudioRecord audioRecorder;
+    public static AudioRecord audioRecorder;
     private final int RECORDER_SOURCE = MediaRecorder.AudioSource.MIC;
     private final int SAMPLE_RATE = 44100;
     private final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
