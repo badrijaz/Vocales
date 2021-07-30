@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.net.InetSocketAddress;
 public class MainActivity extends AppCompatActivity {
 
     /* Views */
+    private RadioGroup microphoneOptionsRadioGroup;
     private ImageView imageViewStreaming;
     private TextView textViewIsStreaming;
     private Button buttonStream;
@@ -57,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /* Get microphoneOptionsRadioGroup */
+        microphoneOptionsRadioGroup = findViewById(R.id.microphoneOptionsRadioGroup);
 
         /* Get imageViewStreaming */
         imageViewStreaming = findViewById(R.id.imageViewStreaming);
@@ -93,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 isStreaming = true;
                 verifyRecordAudioPermissionsThenStream();
             }
+            microphoneOptionsRadioGroup.setEnabled(isStreaming);
         });
     }
 
