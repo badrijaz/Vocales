@@ -1,7 +1,6 @@
 package app.badrs;
 
 import javax.sound.sampled.*;
-import java.util.Scanner;
 
 public class Util {
 
