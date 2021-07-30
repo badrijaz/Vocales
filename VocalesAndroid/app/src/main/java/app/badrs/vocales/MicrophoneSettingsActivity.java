@@ -6,6 +6,8 @@ import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.NoiseSuppressor;
 import android.os.Bundle;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import java.util.HashMap;
 
@@ -25,6 +27,17 @@ public class MicrophoneSettingsActivity extends AppCompatActivity {
 
         initializeMicrophoneOptions();
         initializeViews();
+
+        /* RadioGroup */
+        RadioGroup microphoneOptionsRadioGroup = findViewById(R.id.microphoneOptionsRadioGroup);
+        microphoneOptionsRadioGroup.setOnCheckedChangeListener((radioGroup, checkedId) -> {
+            RadioButton microphoneOptionRadioButton = findViewById(checkedId);
+            MainActivity.RECORDER_SOURCE = microphoneOptions.get(
+                    microphoneOptionRadioButton.getText().toString()
+            );
+
+            Utility.toast(MicrophoneSettingsActivity.this, "Microphone changed");
+        });
     }
 
     private void initializeMicrophoneOptions() {
