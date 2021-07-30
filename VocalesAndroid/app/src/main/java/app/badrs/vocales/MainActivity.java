@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     /* AudioRecorder + Audio Configuration */
     public static AudioRecord audioRecorder;
-    private final int RECORDER_SOURCE = MediaRecorder.AudioSource.MIC;
+    public static int RECORDER_SOURCE = MediaRecorder.AudioSource.MIC;
     private final int SAMPLE_RATE = 44100;
     private final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private final int FORMAT = AudioFormat.ENCODING_PCM_16BIT;
