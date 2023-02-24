@@ -1,28 +1,51 @@
 package app.badr.vocalesandroid
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import app.badr.vocalesandroid.databinding.ActivityMainBinding
+import com.google.android.material.snackbar.Snackbar
+import java.math.BigInteger
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import java.net.InetSocketAddress
 
 class MainActivity : AppCompatActivity() {
 
   private lateinit var appBarConfiguration: AppBarConfiguration
   private lateinit var binding: ActivityMainBinding
   private var requestCodeMicrophone = 100
+
+  // Audio Recorder config
+  private lateinit var audioRecorder: AudioRecord
+  private var recorderSource: Int = MediaRecorder.AudioSource.MIC
+  private val sampleRate = 44100
+  private val channel: Int = AudioFormat.CHANNEL_IN_MONO
+  private val format: Int = AudioFormat.ENCODING_PCM_16BIT
+  private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channel, format)
+  private val buffer = ByteArray(bufferSize)
+
+  // Streaming thread
+  private lateinit var streamingThread: Thread
 
   @RequiresApi(Build.VERSION_CODES.M)
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +67,7 @@ class MainActivity : AppCompatActivity() {
       )) {
         PackageManager.PERMISSION_GRANTED -> {
           enableMicrophone()
+          sendStream()
         }
         PackageManager.PERMISSION_DENIED -> {
           this.requestPermissions(
@@ -58,8 +82,39 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
+  @SuppressLint("MissingPermission")
   private fun enableMicrophone() {
-    throw NotImplementedError("Yet to be implemented")
+    audioRecorder = AudioRecord(recorderSource, sampleRate, channel, format, bufferSize)
+    audioRecorder.startRecording()
+  }
+
+  private fun sendStream() {
+    // Make datagram and bind address as null initially
+    val datagramSocket = DatagramSocket(null)
+
+    // Bind IPv4 address of the device to the socket
+    val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    val localHostAddress = wifiManager.connectionInfo.ipAddress
+    val localHostAddressString = InetAddress.getByAddress(
+      BigInteger.valueOf(localHostAddress.toLong()).toByteArray()
+    ).hostAddress
+
+    datagramSocket.bind(
+      InetSocketAddress(localHostAddressString, 1337)
+    )
+
+    streamingThread = Thread {
+      while (true) {
+        // Get microphone stream bytes
+        val recorderBytes = audioRecorder.read(buffer, 0, buffer.size)
+
+        // Make datagram packet and send
+        val packet = DatagramPacket(buffer, recorderBytes)
+        datagramSocket.send(packet)
+      }
+    }
+
+    streamingThread.start()
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
