@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -33,7 +34,10 @@ class MainActivity : AppCompatActivity() {
 
   private lateinit var appBarConfiguration: AppBarConfiguration
   private lateinit var binding: ActivityMainBinding
+  private lateinit var textViewIpAddress: TextView
+
   private var requestCodeMicrophone = 100
+
 
   // Audio Recorder config
   private lateinit var audioRecorder: AudioRecord
@@ -61,6 +65,9 @@ class MainActivity : AppCompatActivity() {
     val navController = findNavController(R.id.nav_host_fragment_content_main)
     appBarConfiguration = AppBarConfiguration(navController.graph)
     setupActionBarWithNavController(navController, appBarConfiguration)
+
+    // Views
+    textViewIpAddress = findViewById(R.id.textViewIpAddress)
 
     binding.fab.setOnClickListener { view ->
       when (ContextCompat.checkSelfPermission(
@@ -90,7 +97,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun sendStream() {
-    // Make datagram and bind address as null initially
+    // Make datagram socket and bind address as null initially
     val datagramSocket = DatagramSocket(null)
 
     // Bind IPv4 address of the device to the socket
@@ -100,9 +107,12 @@ class MainActivity : AppCompatActivity() {
       BigInteger.valueOf(localHostAddress.toLong()).toByteArray()
     ).hostAddress
 
+    // Bind socket to the local host and set view
     datagramSocket.bind(
       InetSocketAddress(localHostAddressString, localHostPort)
     )
+
+    textViewIpAddress.append(localHostAddressString)
 
     streamingThread = Thread {
       while (true) {
