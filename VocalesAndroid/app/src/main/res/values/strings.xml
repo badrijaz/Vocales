@@ -8,4 +8,5 @@
     <string name="previous">Previous</string>
 
     <string name="ip_address">IP Address: </string>
+    <string name="packet">Packet: </string>
 </resources>

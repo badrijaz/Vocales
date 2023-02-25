@@ -34,7 +34,9 @@ class MainActivity : AppCompatActivity() {
 
   private lateinit var appBarConfiguration: AppBarConfiguration
   private lateinit var binding: ActivityMainBinding
+
   private lateinit var textViewIpAddress: TextView
+  private lateinit var textViewPacket: TextView
 
   private var requestCodeMicrophone = 100
 
@@ -69,6 +71,7 @@ class MainActivity : AppCompatActivity() {
 
     // Views
     textViewIpAddress = findViewById(R.id.textViewIpAddress)
+    textViewPacket = findViewById(R.id.textViewPacket)
 
     binding.fab.setOnClickListener { view ->
       if (isStreaming) {
@@ -131,6 +134,8 @@ class MainActivity : AppCompatActivity() {
         // Make datagram packet and send
         val packet = DatagramPacket(buffer, recorderBytes)
         datagramSocket.send(packet)
+
+        textViewPacket.text = "${buffer.toString().subSequence(0, 5)}"
       }
     }
 
