@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
   private val buffer = ByteArray(bufferSize)
 
   // Streaming thread
+  private val localHostPort: Int = 1337
   private lateinit var streamingThread: Thread
 
   @RequiresApi(Build.VERSION_CODES.M)
@@ -100,7 +101,7 @@ class MainActivity : AppCompatActivity() {
     ).hostAddress
 
     datagramSocket.bind(
-      InetSocketAddress(localHostAddressString, 1337)
+      InetSocketAddress(localHostAddressString, localHostPort)
     )
 
     streamingThread = Thread {
