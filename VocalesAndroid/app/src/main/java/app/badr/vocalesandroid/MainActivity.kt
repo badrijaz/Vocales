@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
 
   // Streaming thread
   private val localHostPort: Int = 1337
+  private var isStreaming: Boolean = false
   private lateinit var streamingThread: Thread
 
   @RequiresApi(Build.VERSION_CODES.M)
@@ -70,6 +71,14 @@ class MainActivity : AppCompatActivity() {
     textViewIpAddress = findViewById(R.id.textViewIpAddress)
 
     binding.fab.setOnClickListener { view ->
+      if (isStreaming) {
+        streamingThread.interrupt()
+        isStreaming = false
+        Toast.makeText(this, "Stopping stream", Toast.LENGTH_SHORT).show()
+
+        return@setOnClickListener
+      }
+
       when (ContextCompat.checkSelfPermission(
         this, Manifest.permission.RECORD_AUDIO
       )) {
@@ -126,6 +135,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     streamingThread.start()
+    isStreaming = true
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
